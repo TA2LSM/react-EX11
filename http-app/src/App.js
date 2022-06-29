@@ -1,35 +1,11 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+
+import http from './services/httpService';
+import config from './config.json';
+
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
-
-// Metodun iki fgirdisi olan "success" ve "error" birer fonksiyon.
-// Burada success ile işimiz yok o nedenle kullanılmadı.
-// axios.interceptors.response.use(success, error);
-
-// Metodun kendisi "middleware" galiba bu nedenle rejected promise
-// geri dönerek kontrolü catch bloğuna veriyor.
-// Aşağıdaki error fonksiyonu response olarak error aldığımız her seferde
-// tek bir yerden çalıştırılacaktır. Böylece her metot içine error handling
-// yazmaya gerek kalmayacaktır. SADECE UNEXPECTED ERROR handling için kullanılıyor.
-axios.interceptors.response.use(null, error => {
-  const expectedError =
-    error.response && error.response.status >= 400 && error.response.status < 500;
-  //console.log('Interceptor Called!');
-
-  if (!expectedError) {
-    // Aşağıdaki kısım unexpected error durumu. Burada log'lama yapılması lazım.
-    // Normalde hatanın database gibi bir yere kaydedilmesi lazım
-    console.log('Error Log: ', error);
-    alert('Unexpected Error: Something failed on the server!');
-  }
-
-  // Eğer HTTP 400-499 arası hataları aldıysak sadece rejected promise döner
-  // Kontrolü aşağıdaki metotlar içindeki "catch" bloğuna aktarır. Orada
-  // HTTP 400, 404...vs ayrımı yapılıp ilgili işlemler yapılır.
-  return Promise.reject(error);
-});
-
-const apiEndpoint = 'https://jsonplaceholder.typicode.com/posts';
 
 //https://jsonplaceholder.typicode.com/... adresine sorgu çekilecek
 class App extends Component {
@@ -48,16 +24,16 @@ class App extends Component {
     // // response içinde data kısmı var. Anlaşılması için yukarıdaki kısmı açıklama
     // olarak bırakıyorum. Aşağıdaki kısım kısaltılmış şeklidir.
 
-    const { data: posts } = await axios.get(apiEndpoint);
+    const { data: posts } = await http.get(config.apiEndpoint);
     this.setState({ posts });
   }
 
   // Pessimistic Update
   // handleAdd fonksiyon olarak ayarlanmış bir özelliktir (property)
   handleAdd = async () => {
-    const testObj = { title: 'a', body: 'b' };
+    const testObj = { title: 'NEW DATA', body: 'NEW DATA BODY' };
 
-    const { data: post } = await axios.post(apiEndpoint, testObj);
+    const { data: post } = await http.post(config.apiEndpoint, testObj);
     // fake api bize sadece oluşturulan yeni objeyi döner
 
     const posts = [post, ...this.state.posts];
@@ -66,8 +42,8 @@ class App extends Component {
 
   handleUpdate = async post => {
     post.title = 'UPDATED DATA';
-    await axios.put(apiEndpoint + '/' + post.id, post); //put metodunda tüm data yollanır (post)
-    // const post = await axios.patch(apiEndpoint + "/" + post.id, {
+    await http.put(config.apiEndpoint + '/' + post.id, post); //put metodunda tüm data yollanır (post)
+    // const post = await axios.patch(config.apiEndpoint + "/" + post.id, {
     //   title: post.title,
     // }); //patch metodunda ilgili datalar yollanır (post)
 
@@ -86,17 +62,18 @@ class App extends Component {
     this.setState({ posts });
 
     try {
-      await axios.delete(apiEndpoint + '/' + post.id);
-      // await axios.delete(apiEndpoint + '/sss/' + post.id); // HTTP 404 hatası için kullan
-      // await axios.delete('s' + apiEndpoint + '/' + post.id); // Unsupported protocol hatası için kullan
-
+      // await http.delete(config.apiEndpoint + '/' + post.id);
+      // await http.delete(config.apiEndpoint + '/sss/' + post.id); // HTTP 404 hatası için kullan
+      await http.delete('s' + config.apiEndpoint + '/' + post.id); // Unsupported protocol hatası için kullan
       //Error simulation
       //throw new Error('');
     } catch (ex) {
       // Expected Error
-      if (ex.response && ex.response.status === 404) alert('This post has already been deleted');
+      if (ex.response && ex.response.status === 404)
+        toast.info('This post has already been deleted');
 
-      // // Kodun en başındaki axios interceptor kısmı yoksa aşağıdakiler kullanılabilir
+      // // Kodun en başındaki axios interceptor kısmı httpService'e taşındı.
+      // // o kısım yoksa aşağıdakiler kullanılabilirdi
       // // Expedted Error
       // if (ex.response && ex.response.status === 404) alert('This post has already been deleted');
       // //Unexpected Error
@@ -111,14 +88,27 @@ class App extends Component {
   };
 
   render() {
+    const toastSettings = {
+      position: toast.POSITION.BOTTOM_RIGHT,
+      autoClose: 3000,
+      hideProgressBar: false,
+      newestOnTop: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      theme: 'dark',
+    };
+
     return (
-      <React.Fragment>
+      <div>
+        <ToastContainer {...toastSettings} />
+
         <button
           className='btn btn-primary'
           onClick={this.handleAdd}
         >
           Add
         </button>
+
         <table className='table'>
           <thead>
             <tr>
@@ -151,7 +141,7 @@ class App extends Component {
             ))}
           </tbody>
         </table>
-      </React.Fragment>
+      </div>
     );
   }
 }
