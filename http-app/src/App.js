@@ -38,6 +38,8 @@ class App extends Component {
 
     const posts = [post, ...this.state.posts];
     this.setState({ posts });
+
+    toast.info('A new post has been added');
   };
 
   handleUpdate = async post => {
@@ -52,6 +54,8 @@ class App extends Component {
 
     posts[index] = { ...post };
     this.setState({ posts });
+
+    toast.info('The post has been updated...');
   };
 
   // Optimistic Update
@@ -62,15 +66,17 @@ class App extends Component {
     this.setState({ posts });
 
     try {
-      // await http.delete(config.apiEndpoint + '/' + post.id);
-      // await http.delete(config.apiEndpoint + '/sss/' + post.id); // HTTP 404 hatası için kullan
-      await http.delete('s' + config.apiEndpoint + '/' + post.id); // Unsupported protocol hatası için kullan
+      await http.delete(config.apiEndpoint + '/' + post.id);
+      //await http.delete(config.apiEndpoint + '/sss/' + post.id); // HTTP 404 hatası için kullan
+      //await http.delete('s' + config.apiEndpoint + '/' + post.id); // Unsupported protocol hatası için kullan
+
       //Error simulation
       //throw new Error('');
+
+      toast.success('The post has been deleted');
     } catch (ex) {
       // Expected Error
-      if (ex.response && ex.response.status === 404)
-        toast.info('This post has already been deleted');
+      if (ex.response && ex.response.status === 404) toast('This post has already been deleted');
 
       // // Kodun en başındaki axios interceptor kısmı httpService'e taşındı.
       // // o kısım yoksa aşağıdakiler kullanılabilirdi
