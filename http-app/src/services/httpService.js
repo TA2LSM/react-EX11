@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
+import logger from './logService';
+
 // Metodun iki girdisi olan "success" ve "error" birer fonksiyon.
 // Burada success ile işimiz yok o nedenle kullanılmadı.
 // axios.interceptors.response.use(success, error);
@@ -17,10 +19,17 @@ axios.interceptors.response.use(null, error => {
 
   if (!expectedError) {
     // Aşağıdaki kısım unexpected error durumu. Burada log'lama yapılması lazım.
-    // Normalde hatanın database gibi bir yere kaydedilmesi lazım
-    console.log('Error Log: ', error);
-    //alert('Unexpected Error: Something failed on the server!'); //alert yerine toast.error yazıldı
 
+    // Normalde hatanın database gibi bir yere kaydedilmesi gerekiyor. Bunun için
+    // sentry,io sitesinden hesap açtık. Oradan proje oluşturup o ayarlar ile
+    // burada kullandık. console.log kısmı da iptal edilmiş oldu.
+    //console.log('Error Log: ', error);
+
+    // sentry.io sitesi için kullanılan erişim modülü ayrıca bir modül içine yazılıp
+    // buraya eklendi.
+    logger.log(error);
+
+    //alert('Unexpected Error: Something failed on the server!'); //alert yerine toast.error yazıldı
     toast.error('Unexpected Error: Something failed on the server!'); //alert yerine toast.error yazıldı
     //toast metotları: info, success, error, warning, dark ya da ek metot olmadan kullanılabilir
   }

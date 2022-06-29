@@ -67,8 +67,8 @@ class App extends Component {
 
     try {
       await http.delete(config.apiEndpoint + '/' + post.id);
-      //await http.delete(config.apiEndpoint + '/sss/' + post.id); // HTTP 404 hatası için kullan
-      //await http.delete('s' + config.apiEndpoint + '/' + post.id); // Unsupported protocol hatası için kullan
+      // await http.delete(config.apiEndpoint + '/sss/' + post.id); // HTTP 404 hatası için kullan
+      // await http.delete('s' + config.apiEndpoint + '/' + post.id); // Unsupported protocol hatası için kullan
 
       //Error simulation
       //throw new Error('');
@@ -95,8 +95,8 @@ class App extends Component {
 
   render() {
     const toastSettings = {
-      position: toast.POSITION.BOTTOM_RIGHT,
-      autoClose: 3000,
+      position: toast.POSITION.BOTTOM_LEFT,
+      autoClose: 2000,
       hideProgressBar: false,
       newestOnTop: true,
       closeOnClick: false,
